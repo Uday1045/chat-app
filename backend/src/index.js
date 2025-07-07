@@ -27,9 +27,15 @@ app.use("/api/messages",messageRoutes)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-  });
+ app.get("/*", (req, res) => {
+  // ✅ req is defined here
+  if (req.originalUrl.startsWith("/api/")) {
+    return res.status(404).json({ error: "API not found" });
+  }
+
+  res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+});
+
 }
   server.listen(PORT,() => {
     console.log("Server is running on port:"+ PORT);
