@@ -5,7 +5,13 @@ import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { Users } from "lucide-react";
 
 const Sidebar = () => {
-  const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
+  const {
+    getUsers,
+    users,
+    selectedUser,
+    setSelectedUser,
+    isUsersLoading,
+  } = useChatStore();
 
   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -14,21 +20,37 @@ const Sidebar = () => {
     getUsers();
   }, [getUsers]);
 
-   const filteredUsers = showOnlineOnly
+  const filteredUsers = showOnlineOnly
     ? users.filter((user) => onlineUsers.includes(user._id))
     : users;
 
   if (isUsersLoading) return <SidebarSkeleton />;
+const { messages } = useChatStore.getState(); // pull from zustand store
 
+const getLastMessageWithUser = (userId) => {
+  const relevantMessages = messages.filter(
+    (msg) =>
+      (msg.senderId === userId && selectedUser?._id !== msg.senderId) ||
+      (msg.receiverId === userId && selectedUser?._id !== msg.receiverId)
+  );
+
+  if (relevantMessages.length === 0) return null;
+
+  const lastMsg = relevantMessages[relevantMessages.length - 1];
+  return lastMsg.text;
+};
   return (
-    <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
+    <aside className="h-full w-full lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
+      {/* Header */}
       <div className="border-b border-base-300 w-full p-5">
         <div className="flex items-center gap-2">
           <Users className="size-6" />
-          <span className="font-medium hidden lg:block">Contacts</span>
+          {/* Show Contacts text on all screen sizes now */}
+          <span className="font-medium block">Contacts</span>
         </div>
-        {/* TODO: Online filter toggle */}
-       <div className="mt-3 hidden lg:flex items-center gap-2">
+
+        {/* Online filter toggle - only for large screens */}
+        <div className="mt-3 hidden lg:flex items-center gap-2">
           <label className="cursor-pointer flex items-center gap-2">
             <input
               type="checkbox"
@@ -38,10 +60,13 @@ const Sidebar = () => {
             />
             <span className="text-sm">Show online only</span>
           </label>
-          <span className="text-xs text-zinc-500">({onlineUsers.length - 1} online)</span>
+          <span className="text-xs text-zinc-500">
+            ({onlineUsers.length - 1} online)
+          </span>
         </div>
       </div>
 
+      {/* User List */}
       <div className="overflow-y-auto w-full py-3">
         {filteredUsers.map((user) => (
           <button
@@ -50,7 +75,11 @@ const Sidebar = () => {
             className={`
               w-full p-3 flex items-center gap-3
               hover:bg-base-300 transition-colors
-              ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
+              ${
+                selectedUser?._id === user._id
+                  ? "bg-base-300 ring-1 ring-base-300"
+                  : ""
+              }
             `}
           >
             <div className="relative w-8 h-8">
@@ -60,17 +89,16 @@ const Sidebar = () => {
                 className="w-full h-full object-cover rounded-full"
               />
               {onlineUsers.includes(user._id) && (
-                <span
-                  className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-zinc-900"
-                />
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
               )}
             </div>
 
-            {/* User info - only visible on larger screens */}
-            <div className="hidden lg:block text-left min-w-0">
+            {/* User info – show on all screens now */}
+            <div className="block text-left min-w-0">
               <div className="font-medium truncate">{user.fullName}</div>
               <div className="text-sm text-zinc-400">
-                {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+                {getLastMessageWithUser(user._id)}
+               {/* {onlineUsers.includes(user._id) ? "Online" : "Offline"} */}
               </div>
             </div>
           </button>
@@ -83,4 +111,5 @@ const Sidebar = () => {
     </aside>
   );
 };
+
 export default Sidebar;
