@@ -23,8 +23,17 @@ const userSchema=new mongoose.Schema(
                 default:""
 
             },
-        
+            location: {
+      type: String,
+      required: true, // or false if optional
+      index: true,
     },
+    interests: {
+      type: [String],
+      default: [],
+
+    },
+},
     {timestamps:true}
 );
 const User=mongoose.model("User",userSchema);

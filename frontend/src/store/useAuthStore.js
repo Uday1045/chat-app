@@ -12,6 +12,7 @@ export const useAuthStore = create((set, get) => ({
   isUpdatingProfile: false,
   isCheckingAuth: true,
   onlineUsers: [],
+  interests: [],
   socket: null,
 
   checkAuth: async () => {
@@ -81,6 +82,22 @@ export const useAuthStore = create((set, get) => ({
       set({ isUpdatingProfile: false });
     }
   },
+  updateInterests: async (data) => {
+    console.log("STORE RECEIVED:", data);
+
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await axiosInstance.put("/auth/update-interest", data);
+      set({ authUser: res.data });
+      toast.success("Interests updated successfully");
+    } catch (error) {
+      console.log("error in update interests:", error);
+      toast.error(error.response.data.message);
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
+
 
   connectSocket: () => {
     const { authUser } = get();

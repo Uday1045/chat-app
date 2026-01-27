@@ -1,18 +1,27 @@
 import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
 const ChatHeader = () => {
+  const navigate = useNavigate();
   const { selectedUser, setSelectedUser } = useChatStore();
   const { onlineUsers } = useAuthStore();
 
-  if (!selectedUser) return null; // Safety check
+  if (!selectedUser) return null;
+
+  const handleProfileView = () => {
+    navigate(`/profile/${selectedUser._id}`);
+  };
 
   return (
     <div className="p-2.5 border-b border-base-300">
       <div className="flex items-center justify-between">
-        {/* Avatar and User Info */}
-        <div className="flex items-center gap-3">
+        {/* Avatar + Info */}
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={handleProfileView}
+        >
           <div className="relative w-10 h-10">
             <img
               src={selectedUser.profilePic || "/avatar.png"}
@@ -25,14 +34,18 @@ const ChatHeader = () => {
           </div>
 
           <div>
-            <h3 className="font-medium leading-5">{selectedUser.fullName}</h3>
-            <p className="text-sm text-base-content/70 leading-tight">
-              {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
+            <h3 className="font-medium leading-5">
+              {selectedUser.fullName}
+            </h3>
+            <p className="text-sm text-base-content/70">
+              {onlineUsers.includes(selectedUser._id)
+                ? "Online"
+                : "Offline"}
             </p>
           </div>
         </div>
 
-        {/* Close button */}
+        {/* Close */}
         <button
           onClick={() => setSelectedUser(null)}
           className="p-1 rounded hover:bg-base-200 transition"

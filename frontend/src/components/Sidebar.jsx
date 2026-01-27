@@ -12,33 +12,27 @@ const Sidebar = () => {
     setSelectedUser,
     isUsersLoading,
   } = useChatStore();
+const messages = useChatStore((state) => state.messages);
 
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers,authUser } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
-  useEffect(() => {
-    getUsers();
-  }, [getUsers]);
+  const sameLocationUsers = authUser
+  ? users.filter((user) => user.location === authUser.location)
+  : [];
 
-  const filteredUsers = showOnlineOnly
-    ? users.filter((user) => onlineUsers.includes(user._id))
-    : users;
+ useEffect(() => {
+  getUsers();
+}, [getUsers]);
+
+
+ const filteredUsers = showOnlineOnly
+  ? sameLocationUsers.filter((user) => onlineUsers.includes(user._id))
+  : sameLocationUsers;
+
 
   if (isUsersLoading) return <SidebarSkeleton />;
-const { messages } = useChatStore.getState(); // pull from zustand store
 
-const getLastMessageWithUser = (userId) => {
-  const relevantMessages = messages.filter(
-    (msg) =>
-      (msg.senderId === userId && selectedUser?._id !== msg.senderId) ||
-      (msg.receiverId === userId && selectedUser?._id !== msg.receiverId)
-  );
-
-  if (relevantMessages.length === 0) return null;
-
-  const lastMsg = relevantMessages[relevantMessages.length - 1];
-  return lastMsg.text;
-};
   return (
     <aside className="h-full w-full lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
       {/* Header */}
@@ -97,8 +91,7 @@ const getLastMessageWithUser = (userId) => {
             <div className="block text-left min-w-0">
               <div className="font-medium truncate">{user.fullName}</div>
               <div className="text-sm text-zinc-400">
-                {getLastMessageWithUser(user._id)}
-               {/* {onlineUsers.includes(user._id) ? "Online" : "Offline"} */}
+               {onlineUsers.includes(user._id) ? "Online" : "Offline"}
               </div>
             </div>
           </button>

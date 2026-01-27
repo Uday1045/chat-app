@@ -12,9 +12,11 @@ const SignUpPage = () => {
     fullName: "",
     email: "",
     password: "",
+    location: "",
   });
 
   const { signup, isSigningUp } = useAuthStore();
+
 
   const validateForm = () => {
     if (!formData.fullName.trim()) return toast.error("Full name is required");
@@ -80,15 +82,36 @@ const SignUpPage = () => {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="size-5 text-base-content/40" />
                 </div>
-                <input
-                  type="email"
-                  className={`input input-bordered w-full pl-10`}
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
+               <input
+  type="email"
+  className="input input-bordered w-full pl-10"
+  placeholder="you@example.com"
+  value={formData.email}
+  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+/>
+
               </div>
             </div>
+              <div className="form-control">
+  <label className="label">
+    <span className="label-text font-medium">Location</span>
+  </label>
+  <div className="relative">
+    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <Mail className="size-5 text-base-content/40" />
+    </div>
+    <input
+      type="text"
+      placeholder="Enter your location"
+      value={formData.location}
+      onChange={(e) =>
+        setFormData({ ...formData, location: e.target.value })
+      }
+      className="input input-bordered w-full pl-10"
+    />
+  </div>
+</div>
+
 
             <div className="form-control">
               <label className="label">

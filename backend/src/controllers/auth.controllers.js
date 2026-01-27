@@ -2,52 +2,53 @@ import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js"
 import bcrypt from "bcryptjs"
 import cloudinary from "../lib/cloudinary.js"
+import mongoose from "mongoose";
+
+
 
 
 export const signup = async (req, res) => {
-    const { fullName, email, password } = req.body
-    try {
-        if (!fullName || !email || !password) {
-            return res.status(400).json({ message: "All field are required" });
+  const { fullName, email, password, location } = req.body;
 
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({ message: "Password must be at least 6 characters" });
-        }
-        const user = await User.findOne({ email })
-        if (user) return res.status(400).json({ message: "Email already exists" });
-
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const newUser = new User({
-            fullName,
-            email,
-            password: hashedPassword
-        })
-        if (newUser) {
-            generateToken(newUser._id, res)
-            await newUser.save();
-
-            res.status(201).json({
-                _id: newUser._id,
-                fullName: newUser.fullName,
-                email: newUser.email,
-                profilePic: newUser.profilePic,
-
-
-            });
-        } else {
-            res.status(400).json({ message: "Invalid user data" });
-        }
-
-    } catch (error) {
-        console.log("error in signup controller", error.message);
-        res.status(500).json({ message: "Interval Server Error" });
-
+  try {
+    if (!fullName || !email || !password || !location) {
+      return res.status(400).json({ message: "All fields are required" });
     }
-}
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = await User.create({
+      fullName,
+      email,
+      password: hashedPassword,
+      location,
+    });
+
+    generateToken(newUser._id, res);
+
+    res.status(201).json({
+      _id: newUser._id,
+      fullName: newUser.fullName,
+      email: newUser.email,
+      location: newUser.location,
+      profilePic: newUser.profilePic,
+    });
+  } catch (error) {
+    console.log("error in signup controller:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 export const login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -118,3 +119,86 @@ export const checkAuth = (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+export const getUsersByLocation = async (req, res) => {
+  try {
+    const { location } = req.params;
+
+    const users = await User.find(
+      { location },
+      "-password" // exclude password
+    );
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.log("error in getUsersByLocation:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export const getAllLocations = async (req, res) => {
+  try {
+    const locations = await User.distinct("location");
+    res.status(200).json(locations);
+  } catch (error) {
+    console.log("error in getAllLocations:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export const updateLocation = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { location } = req.body;
+
+    if (!location) {
+      return res.status(400).json({ message: "Location is required" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { location },
+      { new: true }
+    ).select("-password");
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.log("error in updateLocation:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const updateInterests = async (req, res) => {
+  try {
+    const { interests } = req.body;
+
+    console.log("Backend received:", interests);
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { interests },
+      { new: true } // 🔴 critical
+    );
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Update interests error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getProfileById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select("fullName email interests bio profilePic createdAt");
+
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Get profile error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+  
