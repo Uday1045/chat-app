@@ -20,7 +20,9 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173",
+          "https://chat-app-2-5zcj.onrender.com"
+    ],
     credentials: true,
   })
 );
