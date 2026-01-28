@@ -20,14 +20,14 @@ const { userId } = useParams();        // profile being viewed
 const isOwnProfile = authUser?._id === profileUser?._id;
 console.log("ROUTE userId:", userId);
 console.log("TOKEN:", localStorage.getItem("token"));
-  
+
 useEffect(() => {
   if (!userId) return;
 
   const fetchProfile = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5001/api/auth/profile/${userId}`,
+        `https://chat-app-1-s0ea.onrender.com/api/auth/profile/${userId}`,
         {
           credentials: "include", // ← THIS FIXES EVERYTHING
         }
