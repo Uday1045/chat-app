@@ -17,18 +17,21 @@ const messages = useChatStore((state) => state.messages);
   const { onlineUsers,authUser } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
-  const sameLocationUsers = authUser
-  ? users.filter((user) => user.location === authUser.location)
-  : [];
+ const sameLocationUsers =
+  authUser && authUser.location
+    ? users.filter((user) => user.location === authUser.location)
+    : users;
 
  useEffect(() => {
   getUsers();
 }, [getUsers]);
 
 
- const filteredUsers = showOnlineOnly
-  ? sameLocationUsers.filter((user) => onlineUsers.includes(user._id))
-  : sameLocationUsers;
+const filteredUsers =
+  showOnlineOnly && onlineUsers.length > 0
+    ? sameLocationUsers.filter((user) => onlineUsers.includes(user._id))
+    : sameLocationUsers;
+
 
 
   if (isUsersLoading) return <SidebarSkeleton />;
