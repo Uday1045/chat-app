@@ -9,13 +9,13 @@ router.post("/signup",signup);
 router.post("/login",login);
 router.post("/logout",logout);
 
-router.put("/update-profile",protectRoute, updateProfile);
-router.put("/update-interest",protectRoute, updateInterests);
-router.put("/update-location", protectRoute, updateLocation);
+router.put("/update-profile", updateProfile);
+router.put("/update-interest", updateInterests);
+router.put("/update-location",  updateLocation);
 
 
-router.get("/check",protectRoute,checkAuth);
+router.get("/check",checkAuth);
 router.get("/locations", getAllLocations);
-router.get("/location/:location", protectRoute, getUsersByLocation);
-router.get("/profile/:userId", protectRoute, getProfileById);
+router.get("/location/:location", getUsersByLocation);
+router.get("/profile/:userId", getProfileById);
 export default router;
