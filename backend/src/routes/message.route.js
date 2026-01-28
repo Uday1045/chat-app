@@ -4,12 +4,12 @@ import { getMessages, getUsersForSidebar, sendMessage } from "../controllers/mes
 
 const router = express.Router();
 
-router.get("/users", protectRoute, getUsersForSidebar);
+router.get("/users",  getUsersForSidebar);
 // New route to get all messages
 // This route can be used to fetch all messages for the authenticated user
-router.get("/:id", protectRoute, getMessages);
+router.get("/:id",  getMessages);
 
 
-router.post("/send/:id", protectRoute, sendMessage);
+router.post("/send/:id",  sendMessage);
 
 export default router;
