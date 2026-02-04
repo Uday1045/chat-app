@@ -1,11 +1,7 @@
 import mongoose from "mongoose";
 const userSchema=new mongoose.Schema(
     {
-        email:{
-            type:String,
-            required:true,
-            unique:true
-        },
+        
         
             fullName:{
                   type:String,
@@ -18,6 +14,13 @@ const userSchema=new mongoose.Schema(
             required:true,
             minlength:6,
             },
+            username: {
+  type: String,
+  required: true,
+  unique: true,
+  trim: true,
+}
+,
             profilePic:{
                 type:String,
                 default:""

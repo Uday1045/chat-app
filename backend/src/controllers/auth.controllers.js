@@ -8,10 +8,10 @@ import mongoose from "mongoose";
 
 
 export const signup = async (req, res) => {
-  const { fullName, email, password, location } = req.body;
+  const { fullName, username, password, location } = req.body;
 
   try {
-    if (!fullName || !email || !password || !location) {
+    if (!fullName || !username || !password || !location) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -19,9 +19,9 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ username});
     if (userExists) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ message: "Username already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -29,7 +29,7 @@ export const signup = async (req, res) => {
 
     const newUser = await User.create({
       fullName,
-      email,
+      username,
       password: hashedPassword,
     location: location.trim().toLowerCase()
     });
@@ -39,8 +39,8 @@ export const signup = async (req, res) => {
     res.status(201).json({
       _id: newUser._id,
       fullName: newUser.fullName,
-      email: newUser.email,
-      location: newUser.location,
+ username: newUser.username,
+       location: newUser.location,
       profilePic: newUser.profilePic,
     });
   } catch (error) {
@@ -50,10 +50,10 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     try {
-        const user = await User.findOne({ email })
+        const user = await User.findOne({ username })
 
         if (!user) {
             return res.status(400).json({ message: "Invalid credentials" })
@@ -66,8 +66,9 @@ export const login = async (req, res) => {
         res.status(200).json({
             _id: user._id,
             fullName: user.fullName,
-            email: user.email,
+             username: user.username,
             profilePic: user.profilePic,
+            location: user.location,
         })
 
     } catch (error) {
@@ -196,7 +197,7 @@ export const getProfileById = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId).select("fullName email interests bio profilePic createdAt");
+    const user = await User.findById(userId).select("fullName username interests bio profilePic createdAt");
 
 
     if (!user) {
