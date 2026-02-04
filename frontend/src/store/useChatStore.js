@@ -5,10 +5,12 @@ import { useAuthStore } from "./useAuthStore";
 
 export const useChatStore = create((set, get) => ({
   messages: [],
+  sidebarMessages: [], 
   users: [],
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  sidebarChats: [], 
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -33,8 +35,16 @@ export const useChatStore = create((set, get) => ({
       set({ isMessagesLoading: false });
     }
   },
- 
-
+  getSidebarChats: async () => {
+    try {
+      const res = await axiosInstance.get("/messages/getlastmessages");
+     set({
+sidebarMessages: res.data
+});
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  },
 
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();

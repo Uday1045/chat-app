@@ -12,7 +12,7 @@ const Sidebar = () => {
     setSelectedUser,
     isUsersLoading,
   } = useChatStore();
-const messages = useChatStore((state) => state.messages);
+const sidebarMessages = useChatStore((s) => s.sidebarMessages);
 
   const { onlineUsers,authUser } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -31,6 +31,28 @@ const filteredUsers =
   showOnlineOnly && onlineUsers.length > 0
     ? sameLocationUsers.filter((user) => onlineUsers.includes(user._id))
     : sameLocationUsers;
+
+   const getLastMessage = (userId) => {
+  const chat = sidebarMessages.filter(
+    (m) =>
+      (m.senderId === userId && m.receiverId === authUser._id) ||
+      (m.senderId === authUser._id && m.receiverId === userId)
+  );
+  return chat.at(-1) || null;
+};
+const getUnseenCount = (userId) => {
+  if (!userId || !authUser?._id || !Array.isArray(sidebarMessages)) return 0;
+
+  return sidebarMessages.filter(
+    (msg) =>
+      msg &&
+      msg.senderId === userId &&
+      msg.receiverId === authUser._id &&
+      msg.seen === false
+  ).length;
+};
+
+
 
 
 
@@ -65,40 +87,49 @@ const filteredUsers =
 
       {/* User List */}
       <div className="overflow-y-auto w-full py-3">
-        {filteredUsers.map((user) => (
-          <button
-            key={user._id}
-            onClick={() => setSelectedUser(user)}
-            className={`
-              w-full p-3 flex items-center gap-3
-              hover:bg-base-300 transition-colors
-              ${
-                selectedUser?._id === user._id
-                  ? "bg-base-300 ring-1 ring-base-300"
-                  : ""
-              }
-            `}
-          >
-            <div className="relative w-8 h-8">
-              <img
-                src={user.profilePic || "/avatar.png"}
-                alt={user.name}
-                className="w-full h-full object-cover rounded-full"
-              />
-              {onlineUsers.includes(user._id) && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
-              )}
-            </div>
+        {filteredUsers.map((user) => {
+  const chat = sidebarMessages.find(
+    (c) => c._id === user._id
+  );
 
-            {/* User info – show on all screens now */}
-            <div className="block text-left min-w-0">
-              <div className="font-medium truncate">{user.fullName}</div>
-              <div className="text-sm text-zinc-400">
-               {onlineUsers.includes(user._id) ? "Online" : "Offline"}
-              </div>
-            </div>
-          </button>
-        ))}
+  return (
+    <button
+      key={user._id}
+      onClick={() => setSelectedUser(user)}
+      className={`w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors
+        ${selectedUser?._id === user._id ? "bg-base-300" : ""}`}
+    >
+      <div className="relative w-8 h-8">
+        <img
+          src={user.profilePic || "/avatar.png"}
+          alt={user.fullName}
+          className="w-full h-full object-cover rounded-full"
+        />
+        {onlineUsers.includes(user._id) && (
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
+        )}
+      </div>
+
+      {/* Message preview */}
+      <div className="flex-1 min-w-0">
+        <div className="font-medium truncate">{user.fullName}</div>
+
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-zinc-400 truncate">
+            {chat?.lastMessage || "No messages yet"}
+          </p>
+
+          {chat?.unreadCount > 0 && (
+            <span className="ml-2 bg-primary text-white text-xs px-2 py-0.5 rounded-full">
+              {chat.seen}
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+})}
+
 
         {filteredUsers.length === 0 && (
           <div className="text-center text-zinc-500 py-4">No online users</div>

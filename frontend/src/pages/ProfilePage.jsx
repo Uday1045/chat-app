@@ -26,12 +26,18 @@ useEffect(() => {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(
-        `https://chat-app-1-s0ea.onrender.com/api/auth/profile/${userId}`,
-        {
-          credentials: "include", // ← THIS FIXES EVERYTHING
-        }
-      );
+      const API_BASE =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:5001"
+    : "https://chat-app-1-s0ea.onrender.com";
+
+const res = await fetch(
+  `${API_BASE}/api/auth/profile/${userId}`,
+  {
+    credentials: "include",
+  }
+);
+
 
       if (!res.ok) {
         throw new Error("Unauthorized");
@@ -118,21 +124,25 @@ src={
                 alt="Profile"
                 className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-black"
               />
-              <label
-                htmlFor="avatar-upload"
-                className={`absolute bottom-0 right-0 bg-base-content p-2 rounded-full cursor-pointer transition-all duration-200 hover:scale-105 ${isUpdatingProfile ? "animate-pulse pointer-events-none" : ""
-                  }`}
-              >
-                <Camera className="w-5 h-5 text-base-200" />
-                <input
-                  type="file"
-                  id="avatar-upload"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={isUpdatingProfile}
-                />
-              </label>
+             {isOwnProfile && (
+  <label
+    htmlFor="avatar-upload"
+    className={`absolute bottom-0 right-0 bg-base-content p-2 rounded-full cursor-pointer transition-all duration-200 hover:scale-105 ${
+      isUpdatingProfile ? "animate-pulse pointer-events-none" : ""
+    }`}
+  >
+    <Camera className="w-5 h-5 text-base-200" />
+    <input
+      type="file"
+      id="avatar-upload"
+      className="hidden"
+      accept="image/*"
+      onChange={handleImageUpload}
+      disabled={isUpdatingProfile}
+    />
+  </label>
+)}
+
             </div>
             <p className="text-sm text-zinc-400">
               {isUpdatingProfile

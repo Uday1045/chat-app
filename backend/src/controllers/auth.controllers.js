@@ -31,7 +31,7 @@ export const signup = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      location,
+    location: location.trim().toLowerCase()
     });
 
     generateToken(newUser._id, res);
@@ -129,10 +129,12 @@ export const getUsersByLocation = async (req, res) => {
   try {
     const { location } = req.params;
 
+
     const users = await User.find(
-      { location },
-      "-password" // exclude password
-    );
+  { location: location.trim().toLowerCase() },
+  "-password"
+);
+
 
     res.status(200).json(users);
   } catch (error) {

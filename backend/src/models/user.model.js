@@ -26,7 +26,7 @@ const userSchema=new mongoose.Schema(
             location: {
       type: String,
       required: true, // or false if optional
-      index: true,
+      lowercase: true,
     },
     interests: {
       type: [String],

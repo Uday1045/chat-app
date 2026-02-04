@@ -5,8 +5,8 @@ import { checkAuth,signup,login,logout,updateProfile, getUsersByLocation,
 import { protectRoute } from "../middleware/auth.middleware.js";
 const router= express.Router();
 
-router.post("/signup", protectRoute, signup);
-router.post("/login",protectRoute, login);
+router.post("/signup",  signup);
+router.post("/login", login);
 router.post("/logout",protectRoute,logout);
 
 router.put("/update-profile",protectRoute, updateProfile);

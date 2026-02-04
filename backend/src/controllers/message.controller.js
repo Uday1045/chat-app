@@ -23,6 +23,7 @@ export const getMessages = async (req, res) => {
       $or: [
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
+         { seen: false }
       ],
     });
 
@@ -46,11 +47,13 @@ export const sendMessage = async (req, res) => {
     }
 
     const newMessage = new Message({
-      senderId,
-      receiverId,
-      text,
-      image: imageUrl,
-    });
+  senderId,
+  receiverId,
+  text,
+  image: imageUrl,
+  seen: false,     // ✅ MUST match schema
+});
+
 
     await newMessage.save();
 // real time functionality 
@@ -65,3 +68,57 @@ export const sendMessage = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+export const getSidebarChats = async (req, res) => {
+  try {
+    const myId = req.user._id;
+
+    const chats = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { senderId: myId },
+            { receiverId: myId },
+          ],
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", myId] },
+              "$receiverId",
+              "$senderId",
+            ],
+          },
+          lastMessage: { $first: "$text" },          // ✅ FIXED
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$receiverId", myId] },
+                    { $eq: ["$seen", false] },        // ✅ FIXED
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+
+    res.status(200).json(chats);
+  } catch (error) {
+    console.error("Sidebar error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
