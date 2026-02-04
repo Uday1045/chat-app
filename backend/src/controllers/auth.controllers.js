@@ -197,7 +197,7 @@ export const getProfileById = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId).select("fullName username interests bio profilePic createdAt");
+    const user = await User.findById(userId).select("fullName username interests profilePic createdAt");
 
 
     if (!user) {
