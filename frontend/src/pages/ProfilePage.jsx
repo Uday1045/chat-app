@@ -10,6 +10,7 @@ const ProfilePage = () => {
 
   const [selectedImg, setSelectedImg] = useState(null);
   const [interestInput, setInterestInput] = useState("");
+const [previewImg, setPreviewImg] = useState(null);
 
   const [interests, setInterests] = useState([]);
 
@@ -115,15 +116,23 @@ useEffect(() => {
           {/* Avatar Upload */}
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <img
-src={
-  selectedImg ||
-  profileUser?.profilePic ||
-  "/avatar.png"
-}
-                alt="Profile"
-                className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-black"
-              />
+             <img
+  src={
+    selectedImg ||
+    profileUser?.profilePic ||
+    "/avatar.png"
+  }
+  alt="Profile"
+  className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-black cursor-pointer hover:opacity-90"
+  onClick={() =>
+    setPreviewImg(
+      selectedImg ||
+      profileUser?.profilePic ||
+      "/avatar.png"
+    )
+  }
+/>
+
              {isOwnProfile && (
   <label
     htmlFor="avatar-upload"
@@ -140,7 +149,21 @@ src={
       onChange={handleImageUpload}
       disabled={isUpdatingProfile}
     />
+    
   </label>
+)}
+{previewImg && (
+  <div
+    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+    onClick={() => setPreviewImg(null)}
+  >
+    <img
+      src={previewImg}
+      alt="Profile Preview"
+      className="max-w-[90%] max-h-[90%] rounded-lg"
+      onClick={(e) => e.stopPropagation()}
+    />
+  </div>
 )}
 
             </div>

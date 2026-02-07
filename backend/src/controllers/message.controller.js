@@ -23,7 +23,7 @@ export const getMessages = async (req, res) => {
       $or: [
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
-         { seen: false }
+         
       ],
     });
 

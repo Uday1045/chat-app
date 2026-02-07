@@ -1,6 +1,5 @@
 import { useChatStore } from "../store/useChatStore";
-
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -9,6 +8,8 @@ import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 
 const ChatContainer = () => {
+  const [previewImg, setPreviewImg] = useState(null);
+
   const {
     messages,
     getMessages,
@@ -17,83 +18,119 @@ const ChatContainer = () => {
     subscribeToMessages,
     unsubscribeFromMessages,
   } = useChatStore();
+
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
 
+  // Fetch messages + socket subscription
   useEffect(() => {
-    getMessages(selectedUser._id);
+    if (!selectedUser?._id) return;
 
+    getMessages(selectedUser._id);
     subscribeToMessages();
 
     return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  }, [
+    selectedUser?._id,
+    getMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  ]);
 
+  // Auto scroll to latest message
   useEffect(() => {
-    if (messageEndRef.current && messages) {
+    if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-if (isMessagesLoading) {
+  if (isMessagesLoading) {
+    return (
+      <div className="flex-1 flex flex-col overflow-auto">
+        <ChatHeader />
+        <MessageSkeleton />
+        <MessageInput />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 flex flex-col overflow-auto" >
+    <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
-      <MessageSkeleton />
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message) => (
+          <div
+            key={message._id}
+            className={`chat ${
+              message.senderId === authUser._id
+                ? "chat-end"
+                : "chat-start"
+            }`}
+          >
+            {/* Avatar */}
+            <div className="chat-image">
+              <div className="w-10 h-10 rounded-full border overflow-hidden">
+                <img
+                  src={
+                    message.senderId === authUser._id
+                      ? authUser.profilePic || "/avatar.png"
+                      : selectedUser.profilePic || "/avatar.png"
+                  }
+                  alt="profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Time */}
+            <div className="chat-header mb-1">
+              <time className="text-xs opacity-50 ml-1">
+                {formatMessageTime(message.createdAt)}
+              </time>
+            </div>
+
+            {/* Message bubble */}
+            <div className="chat-bubble flex flex-col">
+              {message.image && (
+                <img
+                  src={message.image}
+                  alt="Attachment"
+                  className="sm:max-w-[200px] rounded-md mb-2 cursor-pointer hover:opacity-90"
+                  onClick={() => setPreviewImg(message.image)}
+                />
+              )}
+
+              {message.text && (
+                <p className="text-sm break-words">
+                  {message.text}
+                </p>
+              )}
+            </div>
+
+            <div ref={messageEndRef} />
+          </div>
+        ))}
+      </div>
+
+      {/* Image Preview Modal */}
+      {previewImg && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+          onClick={() => setPreviewImg(null)}
+        >
+          <img
+            src={previewImg}
+            alt="Preview"
+            className="max-w-[90%] max-h-[90%] rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
       <MessageInput />
     </div>
   );
-}
-
-
-return (
-  <div className="flex-1 flex flex-col overflow-auto" >
-    <ChatHeader />
-
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {messages.map((message) => (
-        <div
-          key={message._id}
-          className={`chat ${
-            message.senderId === authUser._id ? "chat-end" : "chat-start"
-          }`}
-          ref={messageEndRef}
-        >
-          <div className="chat-image">
-            <div className="w-10 h-10 relative rounded-full border overflow-hidden">
-              <img
-                src={
-                  message.senderId === authUser._id
-                    ? authUser.profilePic || "/avatar.png"
-                    : selectedUser.profilePic || "/avatar.png"
-                }
-                alt="profile pic"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
-          <div className="chat-header mb-1">
-            <time className="text-xs opacity-50 ml-1">
-              {formatMessageTime(message.createdAt)}
-            </time>
-          </div>
-          <div className="chat-bubble flex flex-col">
-            {message.image && (
-              <img
-                src={message.image}
-                alt="Attachment"
-                className="sm:max-w-[200px] rounded-md mb-2"
-              />
-            )}
-            {message.text && <p>{message.text}</p>}
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <MessageInput />
-  </div>
-);
-
 };
+
 export default ChatContainer;
