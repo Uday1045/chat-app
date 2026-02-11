@@ -1,5 +1,8 @@
+
+import { useNavigate } from "react-router-dom";
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef, useState } from "react";
+
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -18,6 +21,7 @@ const ChatContainer = () => {
     subscribeToMessages,
     unsubscribeFromMessages,
   } = useChatStore();
+const navigate = useNavigate();
 
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -43,6 +47,18 @@ const ChatContainer = () => {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+  useEffect(() => {
+  const handlePopState = () => {
+    navigate("/", { replace: true });
+  };
+
+  window.addEventListener("popstate", handlePopState);
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, [navigate]);
+
 
   if (isMessagesLoading) {
     return (

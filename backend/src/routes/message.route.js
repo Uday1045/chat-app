@@ -1,8 +1,13 @@
 import express from "express";
+import multer from "multer";
+
 import { protectRoute } from "../middleware/auth.middleware.js";
 import { getMessages, getUsersForSidebar, sendMessage,getSidebarChats } from "../controllers/message.controller.js";
 
 const router = express.Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 
 router.get("/getlastmessages", protectRoute, getSidebarChats);
 
@@ -15,6 +20,6 @@ router.get("/getlastmessages", protectRoute, getSidebarChats);
 
 
 
-router.post("/send/:id", protectRoute, sendMessage);
+router.post("/send/:id", protectRoute,upload.single("image"), sendMessage);
 
 export default router;

@@ -14,7 +14,7 @@ router.put("/update-interest",protectRoute, updateInterests);
 router.put("/update-location",protectRoute, updateLocation);
 
 
-router.get("/check",protectRoute,checkAuth);
+router.get("/check",checkAuth);
 router.get("/locations",protectRoute, getAllLocations);
 router.get("/location/:location",protectRoute, getUsersByLocation);
 router.get("/profile/:userId",protectRoute, getProfileById);

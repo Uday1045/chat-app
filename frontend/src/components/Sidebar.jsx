@@ -111,8 +111,8 @@ const getUnseenCount = (userId) => {
       </div>
 
       {/* Message preview */}
-      <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">{user.fullName}</div>
+      <div className="flex-1 min-w-0 text-left">
+        <div className="font-medium truncate text-left">{user.fullName}</div>
 
         <div className="flex justify-between items-center">
           <p className="text-sm text-zinc-400 truncate">
