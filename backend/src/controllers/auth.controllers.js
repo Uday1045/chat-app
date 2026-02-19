@@ -125,24 +125,45 @@ export const checkAuth = (req, res) => {
   }
 };
 
-
 export const getUsersByLocation = async (req, res) => {
   try {
-    const { location } = req.params;
+    const { location, interests } = req.params;
 
+    // Clean incoming interests
+    const interestArray = interests
+      .split(",")
+      .map(i =>
+        i
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\w\s]/gi, "")
+          .trim()
+      );
 
     const users = await User.find(
-  { location: location.trim().toLowerCase() },
-  "-password"
-);
+      {
+        _id: { $ne: req.user._id },
 
+        location: {
+          $regex: new RegExp(`^${location.trim()}$`, "i"),
+        },
+
+        interests: {
+          $in: interestArray.map(
+            i => new RegExp(i, "i")   // 🔥 case-insensitive partial match
+          ),
+        },
+      },
+      "-password"
+    );
 
     res.status(200).json(users);
   } catch (error) {
-    console.log("error in getUsersByLocation:", error.message);
+    console.log("error:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const getAllLocations = async (req, res) => {
   try {
     const locations = await User.distinct("location");

@@ -69,6 +69,9 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  
+
+
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
     try {

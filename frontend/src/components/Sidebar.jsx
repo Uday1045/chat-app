@@ -8,49 +8,70 @@ const Sidebar = () => {
   const {
     getUsers,
     users,
+    getSidebarChats,
     selectedUser,
     setSelectedUser,
     isUsersLoading,
+    getUsersByLocation,
+    listenForMessages,
+     stopListening
   } = useChatStore();
 const sidebarMessages = useChatStore((s) => s.sidebarMessages);
 
   const { onlineUsers,authUser } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
- const sameLocationUsers =
-  authUser && authUser.location
-    ? users.filter((user) => user.location === authUser.location)
-    : users;
+//  const sameLocationUsers =
+//   authUser && authUser.location
+//     ? users.filter((user) => user.location === authUser.location)
+//     : users;
 
- useEffect(() => {
-  getUsers();
-}, [getUsers]);
+useEffect(() => {
+  if (authUser?.location && authUser?.interests?.length > 0) {
+    getUsersByLocation(
+      authUser.location,
+      authUser.interests
+    );
+  }
+}, [authUser]);
 
+useEffect(() => {
+  const interval = setInterval(() => {
+    getSidebarChats(); // call backend again
+  }, 2000);
+
+  return () => clearInterval(interval);
+}, []);
+
+useEffect(() => {
+  listenForMessages();
+
+  return () => stopListening();
+}, []);
 
 const filteredUsers =
   showOnlineOnly && onlineUsers.length > 0
-    ? sameLocationUsers.filter((user) => onlineUsers.includes(user._id))
-    : sameLocationUsers;
+    ? users.filter((user) => onlineUsers.includes(user._id))
+    : users;
 
-   const getLastMessage = (userId) => {
-  const chat = sidebarMessages.filter(
-    (m) =>
-      (m.senderId === userId && m.receiverId === authUser._id) ||
-      (m.senderId === authUser._id && m.receiverId === userId)
-  );
-  return chat.at(-1) || null;
-};
-const getUnseenCount = (userId) => {
-  if (!userId || !authUser?._id || !Array.isArray(sidebarMessages)) return 0;
+// const getLastMessage = (user) => {
+//   const chat = sidebarMessages.find(
+//     (c) => String(c._id) === String(user._id)
+//   );
+//   return chat?.lastMessage || null;
+// };
 
-  return sidebarMessages.filter(
-    (msg) =>
-      msg &&
-      msg.senderId === userId &&
-      msg.receiverId === authUser._id &&
-      msg.seen === false
-  ).length;
-};
+// const getUnseenCount = (userId) => {
+//   if (!userId || !authUser?._id || !Array.isArray(sidebarMessages)) return 0;
+
+//   return sidebarMessages.filter(
+//     (msg) =>
+//       msg &&
+//       msg.senderId === userId &&
+//       msg.receiverId === authUser._id &&
+//       msg.seen === false
+//   ).length;
+// };
 
 
 
@@ -120,10 +141,11 @@ const getUnseenCount = (userId) => {
           </p>
 
           {chat?.unreadCount > 0 && (
-            <span className="ml-2 bg-primary text-white text-xs px-2 py-0.5 rounded-full">
-              {chat.seen}
-            </span>
-          )}
+  <span className="ml-2 bg-primary text-white text-xs px-2 py-0.5 rounded-full">
+    {chat.unreadCount}
+  </span>
+)}
+
         </div>
       </div>
     </button>

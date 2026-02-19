@@ -14,8 +14,8 @@ router.put("/update-interest",protectRoute, updateInterests);
 router.put("/update-location",protectRoute, updateLocation);
 
 
-router.get("/check",checkAuth);
+router.get("/check",protectRoute,checkAuth);
 router.get("/locations",protectRoute, getAllLocations);
-router.get("/location/:location",protectRoute, getUsersByLocation);
+router.get("/location/:location/:interests",protectRoute, getUsersByLocation);
 router.get("/profile/:userId",protectRoute, getProfileById);
 export default router;

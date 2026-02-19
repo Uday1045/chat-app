@@ -1,5 +1,4 @@
 
-import { useNavigate } from "react-router-dom";
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef, useState } from "react";
 
@@ -18,10 +17,9 @@ const ChatContainer = () => {
     getMessages,
     isMessagesLoading,
     selectedUser,
-    subscribeToMessages,
-    unsubscribeFromMessages,
+     listenForMessages,
+      stopListening
   } = useChatStore();
-const navigate = useNavigate();
 
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -31,14 +29,13 @@ const navigate = useNavigate();
     if (!selectedUser?._id) return;
 
     getMessages(selectedUser._id);
-    subscribeToMessages();
-
-    return () => unsubscribeFromMessages();
+listenForMessages();
+    return () => stopListening();
   }, [
     selectedUser?._id,
     getMessages,
-    subscribeToMessages,
-    unsubscribeFromMessages,
+   listenForMessages,
+    stopListening
   ]);
 
   // Auto scroll to latest message
@@ -47,17 +44,7 @@ const navigate = useNavigate();
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-  useEffect(() => {
-  const handlePopState = () => {
-    navigate("/", { replace: true });
-  };
-
-  window.addEventListener("popstate", handlePopState);
-
-  return () => {
-    window.removeEventListener("popstate", handlePopState);
-  };
-}, [navigate]);
+  
 
 
   if (isMessagesLoading) {

@@ -31,11 +31,17 @@ const userSchema=new mongoose.Schema(
       required: true, // or false if optional
       lowercase: true,
     },
+    UniqueCode: {
+      type: String,
+      unique: true,
+    },
     interests: {
       type: [String],
       default: [],
 
+
     },
+
 },
     {timestamps:true}
 );
