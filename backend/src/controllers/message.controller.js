@@ -19,13 +19,23 @@ export const getMessages = async (req, res) => {
     const { id: userToChatId } = req.params;
     const myId = req.user._id;
 
+    // 1️⃣ Mark messages as seen (only messages sent to me)
+    await Message.updateMany(
+      {
+        senderId: userToChatId,
+        receiverId: myId,
+        seen: false,
+      },
+      { $set: { seen: true } }
+    );
+
+    // 2️⃣ Fetch all messages between both users
     const messages = await Message.find({
       $or: [
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
-         
       ],
-    });
+    }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);
   } catch (error) {
@@ -33,6 +43,7 @@ export const getMessages = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 export const sendMessage = async (req, res) => {
   try {
     const text = req.body?.text || "";
